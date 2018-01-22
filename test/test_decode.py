@@ -19,7 +19,7 @@ def test_decoding():
     for filename, expected in test_barcodes:
         path = os.path.join(test_barcode_dir, filename)
         logging.debug('Trying to parse {}, expecting {!r}.'.format(path, expected))
-        dec = reader.decode(path)
+        dec = reader.decode(path)[0]
         if dec.parsed != expected:
             raise AssertionError('Expected {!r} but got {!r}'.format(expected, dec.parsed))
 
