@@ -73,36 +73,36 @@ class BarCode(object):
         point_block = False
 
         self.points = []
-        for l in lines:
-            m = re.search("format:\s([^,]+)", l)
+        for line in lines:
+            m = re.search("format:\s([^,]+)", line)
             if not raw_block and not parsed_block and not point_block and m:
                 self.format = m.group(1)
                 continue
 
-            if not raw_block and not parsed_block and not point_block and l == "Raw result:":
+            if not raw_block and not parsed_block and not point_block and line == "Raw result:":
                 raw_block = True
                 continue
 
-            if raw_block and l != "Parsed result:":
-                self.raw += l + "\n"
+            if raw_block and line != "Parsed result:":
+                self.raw += line + "\n"
                 continue
 
-            if raw_block and l == "Parsed result:":
+            if raw_block and line == "Parsed result:":
                 raw_block = False
                 parsed_block = True
                 continue
 
-            if parsed_block and not re.match("Found\s\d\sresult\spoints", l):
-                self.data += l + "\n"
+            if parsed_block and not re.match("Found\s\d\sresult\spoints", line):
+                self.data += line + "\n"
                 continue
 
-            if parsed_block and re.match("Found\s\d\sresult\spoints", l):
+            if parsed_block and re.match("Found\s\d\sresult\spoints", line):
                 parsed_block = False
                 point_block = True
                 continue
 
             if point_block:
-                m = re.search("Point\s(\d+):\s\(([\d\.]+),([\d\.]+)\)", l)
+                m = re.search("Point\s(\d+):\s\(([\d.]+),([\d.]+)\)", line)
                 if m:
                     self.points.append((float(m.group(2)), float(m.group(3))))
 
