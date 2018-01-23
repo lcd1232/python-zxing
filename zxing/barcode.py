@@ -1,8 +1,10 @@
-from future.utils import python_2_unicode_compatible
+import logging
 import os
 import re
 import subprocess
-import logging
+from tempfile import NamedTemporaryFile
+
+from future.utils import python_2_unicode_compatible
 
 logger = logging.getLogger(__name__)
 
@@ -25,9 +27,9 @@ class BarCodeReader(object):
     def decode(self, files, try_harder=False, qr_only=False):
         cmd = [self.command]
         cmd += self.args[:]  # copy arg values
-        if try_harder:
+        if try_harder is True:
             cmd.append("--try_harder")
-        if qr_only:
+        if qr_only is True:
             cmd.append("--possibleFormats=QR_CODE")
 
         libraries = [self.location + "/" + l for l in self.libs]
@@ -36,27 +38,43 @@ class BarCodeReader(object):
 
         # send one file, or multiple files in a list
         single_file = False
-        if not isinstance(files, (list, tuple)):
-            cmd.append(files)
-            single_file = True
-        else:
-            cmd.extend(files)
+        tmp_files = []
+        try:
+            if isinstance(files, (list, tuple)):
+                for file in files:
+                    if isinstance(file, bytes):
+                        tmp_file = NamedTemporaryFile()
+                        tmp_file.write(file)
+                        tmp_files.append(tmp_file)
+                        cmd.append(tmp_file.name)
+            elif isinstance(files, bytes):
+                tmp_file = NamedTemporaryFile()
+                tmp_file.write(files)
+                tmp_files.append(tmp_file)
+                cmd.append(tmp_file.name)
+            else:
+                cmd.append(files)
+                single_file = True
 
-        (stdout, stderr) = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True).communicate()
-        codes = []
-        file_results = stdout.split("\nfile:")
-        for result in file_results:
-            lines = stdout.split("\n")
-            if re.search("No barcode found", lines[0]):
-                codes.append(None)
-                continue
+            (stdout, _) = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True).communicate()
+            codes = []
+            file_results = stdout.split("\nfile:")
+            for result in file_results:
+                lines = stdout.split("\n")
+                if re.search("No barcode found", lines[0]):
+                    codes.append(None)
+                    continue
 
-            codes.append(BarCode(result))
+                codes.append(BarCode(result))
 
-        if single_file:
-            return codes[0]
-        else:
-            return codes
+            if single_file:
+                return codes[0]
+            else:
+                return codes
+        finally:
+            for tmp_file in tmp_files:
+                if hasattr(tmp_file, 'close'):
+                    tmp_file.close()
 
 
 # this is the barcode class which has
@@ -108,4 +126,7 @@ class BarCode(object):
 
     @python_2_unicode_compatible
     def __str__(self):
-        return ''
+        return ""
+
+    def __repr__(self):
+        return "<class '{0}'>".format(self.__name__, )
