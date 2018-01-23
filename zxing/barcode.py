@@ -8,7 +8,12 @@ import re
 import subprocess
 from tempfile import NamedTemporaryFile
 
-from future.utils import python_2_unicode_compatible
+try:
+    from future.utils import python_2_unicode_compatible
+except ImportError:
+    def python_2_unicode_compatible(cls):
+        return cls
+    # Issues with setup.py needed to import module but the `future` dependency hasn't been installed yet.
 
 logger = logging.getLogger(__name__)
 

@@ -4,5 +4,5 @@ from __future__ import absolute_import
 
 from .barcode import BarCode, BarCodeReader
 
-_version = (1, 0, 0)
-__version__ = ''.join(str(v) for v in _version)
+VERSION = (1, 0, 0)
+__version__ = ''.join(map(str, VERSION))

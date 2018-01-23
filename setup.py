@@ -6,11 +6,11 @@ try:
 except ImportError:
     from distutils.core import setup
 
-import zxing
+from zxing import __version__ as version
 
 setup(
     name='zxing',
-    version=zxing.__version__,
+    version=version,
     description="wrapper for zebra crossing (zxing) barcode library",
     url='http://simplecv.org',
     author='Ingenuitas',
