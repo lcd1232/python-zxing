@@ -11,5 +11,5 @@ setup(
     author='Ingenuitas',
     author_email='public.relations@ingenuitas.com',
     packages=['zxing'],
-    requires=['future']
+    install_requires=['future'],
 )
