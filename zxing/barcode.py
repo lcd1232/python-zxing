@@ -61,6 +61,7 @@ class BarCodeReader(object):
                 tmp_file.write(files)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
+                single_file = True
             else:
                 cmd.append(files)
                 single_file = True
@@ -138,4 +139,4 @@ class BarCode(object):
         return ""
 
     def __repr__(self):
-        return "<class '{0}'>".format(self.__name__, )
+        return "<class '{0}'>".format(self.__class__.__name__, )
