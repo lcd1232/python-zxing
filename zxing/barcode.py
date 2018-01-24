@@ -65,7 +65,7 @@ class BarCodeReader(object):
                 cmd.append(files)
                 single_file = True
 
-            (stdout, _) = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True).communicate()
+            stdout, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True).communicate()
             codes = []
             file_results = stdout.split("\nfile:")
             for result in file_results:
@@ -111,7 +111,7 @@ class BarCode(object):
                 continue
 
             if raw_block and line != "Parsed result:":
-                self.raw += line + "\n"
+                self.raw += line
                 continue
 
             if raw_block and line == "Parsed result:":
@@ -120,7 +120,7 @@ class BarCode(object):
                 continue
 
             if parsed_block and not re.match("Found\s\d\sresult\spoints", line):
-                self.data += line + "\n"
+                self.data += line
                 continue
 
             if parsed_block and re.match("Found\s\d\sresult\spoints", line):
