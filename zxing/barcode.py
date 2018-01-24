@@ -30,7 +30,7 @@ class BarCodeReader(object):
         elif os.environ.get("ZXING_LIBRARY"):
             self.location = os.environ["ZXING_LIBRARY"]
         else:
-            self.location = os.path.join(os.path.dirname(__file__), 'java', '*')
+            self.location = os.path.join(os.path.dirname(__file__), 'java')
 
     def decode(self, files, try_harder=False, qr_only=False):
         cmd = [self.command]
