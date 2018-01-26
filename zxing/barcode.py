@@ -45,8 +45,6 @@ class BarCodeReader(object):
 
         cmd = [c if c != "LIBS" else os.pathsep.join(libraries) for c in cmd]
 
-        # send one file, or multiple files in a list
-        single_file = False
         tmp_files = []
         try:
             if isinstance(files, (list, tuple)):
@@ -61,7 +59,6 @@ class BarCodeReader(object):
                 tmp_file.write(files)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
-                single_file = True
             elif isinstance(files, BufferedIOBase):
                 fp = files
                 fp.seek(0)
@@ -73,10 +70,8 @@ class BarCodeReader(object):
                     tmp_file.write(data)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
-                single_file = True
             else:
                 cmd.append(files)
-                single_file = True
 
             stdout, _ = subprocess.Popen(cmd, stdout=subprocess.PIPE, universal_newlines=True).communicate()
             codes = []
@@ -89,10 +84,7 @@ class BarCodeReader(object):
 
                 codes.append(BarCode(result))
 
-            if single_file:
-                return codes[0]
-            else:
-                return codes
+            return codes
         finally:
             for tmp_file in tmp_files:
                 if hasattr(tmp_file, 'close'):
