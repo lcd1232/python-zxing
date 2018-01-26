@@ -66,8 +66,11 @@ class BarCodeReader(object):
                 fp = files
                 fp.seek(0)
                 tmp_file = NamedTemporaryFile()
-                for chunk in fp.read(4096):
-                    tmp_file.write(chunk)
+                while True:
+                    data = fp.read(4096)
+                    if not data:
+                        break
+                    tmp_file.write(data)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
                 single_file = True
