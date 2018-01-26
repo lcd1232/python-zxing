@@ -6,6 +6,7 @@ import logging
 import os
 import re
 import subprocess
+from io import BufferedIOBase
 from tempfile import NamedTemporaryFile
 
 try:
@@ -58,6 +59,15 @@ class BarCodeReader(object):
             elif isinstance(files, bytes):
                 tmp_file = NamedTemporaryFile()
                 tmp_file.write(files)
+                tmp_files.append(tmp_file)
+                cmd.append(tmp_file.name)
+                single_file = True
+            elif isinstance(files, BufferedIOBase):
+                fp = files
+                fp.seek(0)
+                tmp_file = NamedTemporaryFile()
+                for chunk in fp.read(4096):
+                    tmp_file.write(chunk)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
                 single_file = True
