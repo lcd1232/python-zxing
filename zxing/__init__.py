@@ -75,7 +75,7 @@ class BarCodeReader(object):
 
             if not p.returncode:
                 codes = []
-                for result in stdout.split("\nfile:"):
+                for result in stdout.split(b"\nfile:"):
                     codes.append(BarCode.parse(result))
                 return codes
         finally:
@@ -103,7 +103,7 @@ class BarCode(object):
             if block == CLROutputBlock.UNKNOWN:
                 if l.endswith(b': No barcode found\n'):
                     return None
-                m = re.search(r"format:\s*([^,]+),\s*type:\s*([^)]+)", l)
+                m = re.search(rb"format:\s*([^,]+),\s*type:\s*([^)]+)", l)
                 if m:
                     format, type = m.group(1).decode(), m.group(2).decode()
                 elif l.startswith(b"Raw result:"):
@@ -114,12 +114,12 @@ class BarCode(object):
                 else:
                     raw += l
             elif block == CLROutputBlock.PARSED:
-                if re.match(r"Found\s+\d+\s+result\s+points?", l):
+                if re.match(rb"Found\s+\d+\s+result\s+points?", l):
                     block = CLROutputBlock.POINTS
                 else:
                     parsed += l
             elif block == CLROutputBlock.POINTS:
-                m = re.match(r"\s*Point\s*\d+:\s*\(([\d.]+),([\d.]+)\)", l)
+                m = re.match(rb"\s*Point\s*\d+:\s*\(([\d.]+),([\d.]+)\)", l)
                 if m:
                     points.append((float(m.group(1)), float(m.group(2))))
 
