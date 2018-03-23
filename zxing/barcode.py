@@ -52,11 +52,13 @@ class BarCodeReader(object):
                     if isinstance(file, bytes):
                         tmp_file = NamedTemporaryFile()
                         tmp_file.write(file)
+                        tmp_file.seek(0)
                         tmp_files.append(tmp_file)
                         cmd.append(tmp_file.name)
             elif isinstance(files, bytes):
                 tmp_file = NamedTemporaryFile()
                 tmp_file.write(files)
+                tmp_file.seek(0)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
             elif isinstance(files, BufferedIOBase):
@@ -68,6 +70,7 @@ class BarCodeReader(object):
                     if not data:
                         break
                     tmp_file.write(data)
+                tmp_file.seek(0)
                 tmp_files.append(tmp_file)
                 cmd.append(tmp_file.name)
             else:
