@@ -7,6 +7,8 @@
 #
 
 from __future__ import print_function
+
+import platform
 from enum import Enum
 from io import BufferedIOBase
 from tempfile import NamedTemporaryFile
@@ -29,10 +31,20 @@ class BarCodeReader(object):
         else:
             self.classpath = os.path.join(os.path.dirname(__file__), 'java', '*')
 
-    def decode(self, files, try_harder=False, possible_formats=None):
+    def decode(self, files, try_harder=False, possible_formats=None, java_options=None):
         possible_formats = (possible_formats,) if isinstance(possible_formats, str) else possible_formats
 
-        cmd = [self.java, '-cp', self.classpath, self.cls]
+        if java_options is None:
+            java_options = []
+
+        # to prevent python-zxing from stealing focus on every call on mac
+        if platform.system() == 'Darwin':
+            s = 'java.awt.headless'
+            if not any((v for v in java_options if s in v)):
+                java_options.append('-Djava.awt.headless=true')
+
+        cmd = [self.java] + java_options + ['-cp', self.classpath, self.cls]
+
         if try_harder:
             cmd.append('--try_harder')
         if possible_formats:
@@ -49,6 +61,8 @@ class BarCodeReader(object):
                         tmp_file.seek(0)
                         tmp_files.append(tmp_file)
                         cmd.append(tmp_file.name)
+                    elif isinstance(file, str):
+                        cmd.append(file)
             elif isinstance(files, bytes):
                 tmp_file = NamedTemporaryFile()
                 tmp_file.write(files)
@@ -78,6 +92,7 @@ class BarCodeReader(object):
                 for result in stdout.split(b"\nfile:"):
                     codes.append(BarCode.parse(result))
                 return codes
+            return []
         finally:
             for tmp_file in tmp_files:
                 if hasattr(tmp_file, 'close'):
@@ -93,9 +108,9 @@ class CLROutputBlock(Enum):
 
 class BarCode(object):
     @classmethod
-    def parse(cls, zxing_output):
+    def parse(cls, zxing_output, files_order=None):
         block = CLROutputBlock.UNKNOWN
-        format = type = None
+        format = type = filename = None
         raw = parsed = b''
         points = []
 
@@ -103,9 +118,9 @@ class BarCode(object):
             if block == CLROutputBlock.UNKNOWN:
                 if l.endswith(b': No barcode found\n'):
                     return None
-                m = re.search(rb"format:\s*([^,]+),\s*type:\s*([^)]+)", l)
+                m = re.search(rb"file://(.+) \(format:\s*([^,]+),\s*type:\s*([^)]+)", l)
                 if m:
-                    format, type = m.group(1).decode(), m.group(2).decode()
+                    filename, format, type = m.group(1).decode(), m.group(2).decode(), m.group(3).decode()
                 elif l.startswith(b"Raw result:"):
                     block = CLROutputBlock.RAW
             elif block == CLROutputBlock.RAW:

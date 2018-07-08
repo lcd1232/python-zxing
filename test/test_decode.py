@@ -14,6 +14,7 @@ test_barcodes = [
       '\n\\n¡Atención ☹! UTF-8 characters,\n embedded newline, &amp; trailing whitespace\t ' ),
 ]
 
+
 def test_decoding():
     reader = zxing.BarCodeReader()
     for filename, expected in test_barcodes:
@@ -22,6 +23,15 @@ def test_decoding():
         dec = reader.decode(path)[0]
         if dec.parsed != expected:
             raise AssertionError('Expected {!r} but got {!r}'.format(expected, dec.parsed))
+
+
+def test_decoding_multiple():
+    reader = zxing.BarCodeReader()
+    filenames = [os.path.join(test_barcode_dir, filename) for filename, expected in test_barcodes]
+    for dec, (filename, expected) in zip(reader.decode(filenames), test_barcodes):
+        if dec.parsed != expected:
+            raise AssertionError('Expected {!r} but got {!r}'.format(expected, dec.parsed))
+
 
 def test_parsing():
     dec = zxing.BarCode.parse("""
@@ -42,3 +52,26 @@ Found 4 result points:
     assert dec.raw == 'Élan|\tthe barcode is taking off'
     assert dec.parsed == 'Élan\n\tthe barcode is taking off'
     assert dec.points == [(24.0,18.0),(21.0,196.0),(201.0,198.0),(205.23952,21.0)]
+
+
+def test_parsing_multiple():
+    dec = zxing.BarCode.parse("""
+    file:///tmp/test.jpg (format: CODE_128, type: TEXT):
+    Raw result:
+    Test Code
+    Parsed result:
+    Test Code
+    Found 2 result points.
+      Point 0: (11.5,73.0)
+      Point 1: (561.0,73.0)
+
+    file:///tmp/test2.png (format: QR_CODE, type: TEXT):
+    Raw result:
+    Test Code 2
+    Parsed result:
+    Test Code 2
+    Found 3 result points.
+      Point 0: (0.0,2.0)
+      Point 1: (4.0,10.0)
+      Point 2: (12.0, 255.0)
+""".encode())
